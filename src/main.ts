@@ -2,18 +2,27 @@ import client from './client';
 import commands from './commands';
 import { PREFIX } from './config';
 
-const allCommands = ["play", "v", "help"];
+const allCommands = ['play', 'v', 'help'];
 
-client.initialize();
+client.on('message', async message => {
+  console.log('📩 MESSAGE RECEIVED:', message.body);
 
-client.on('message_create', async message => {
   const body = message.body?.trim();
   if (!body || !body.startsWith(PREFIX)) return;
 
   const [command, ...rest] = body.split(' ');
   const content = rest.join(' ');
 
-  if (!allCommands.includes(command.substring(1))) return;
+  const commandName = command.substring(1);
 
-  await commands[command].run(message, content);
+  if (!allCommands.includes(commandName)) {
+    console.log('❌ Unknown command:', commandName);
+    return;
+  }
+
+  console.log('▶️ Running command:', commandName);
+
+  await commands[commandName].run(message, content);
 });
+
+client.initialize();
