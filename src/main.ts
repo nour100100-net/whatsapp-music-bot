@@ -16,6 +16,7 @@ client.on('message_create', async message => {
 
   const [command, ...rest] = body.split(' ');
   const content = rest.join(' ');
+
   const commandName = command.substring(PREFIX.length);
 
   console.log('🔎 COMMAND:', commandName);
@@ -28,7 +29,7 @@ client.on('message_create', async message => {
   console.log('▶️ Running command:', commandName);
 
   try {
-    await commands[commandName].run(message, content);
+    await commands[`${PREFIX}${commandName}`].run(message, content);
     console.log('✅ Command finished:', commandName);
   } catch (error) {
     console.error('❌ Command error:', error);
