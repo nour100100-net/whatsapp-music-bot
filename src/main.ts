@@ -17,20 +17,22 @@ client.on('message_create', async message => {
   const [command, ...rest] = body.split(' ');
   const content = rest.join(' ');
 
-  const commandName = command.substring(PREFIX.length);
+  const commandKey = command as keyof typeof commands;
+  const selectedCommand = commands[commandKey];
 
-  console.log('🔎 COMMAND:', commandName);
+  console.log('🔎 COMMAND:', command);
+  console.log('🔎 COMMAND KEY:', commandKey);
 
-  if (!allCommands.includes(commandName)) {
-    console.log('❌ Unknown command:', commandName);
+  if (!selectedCommand) {
+    console.log('❌ Unknown command:', command);
     return;
   }
 
-  console.log('▶️ Running command:', commandName);
+  console.log('▶️ Running command:', command);
 
   try {
-    await commands[`${PREFIX}${commandName}`].run(message, content);
-    console.log('✅ Command finished:', commandName);
+    await selectedCommand.run(message, content);
+    console.log('✅ Command finished:', command);
   } catch (error) {
     console.error('❌ Command error:', error);
   }
