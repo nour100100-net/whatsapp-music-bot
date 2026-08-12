@@ -5,15 +5,20 @@ import { PREFIX } from './config';
 const allCommands = ['play', 'v', 'help'];
 
 client.on('message', async message => {
-  console.log('📩 MESSAGE RECEIVED:', message.body);
+  console.log('📩 MESSAGE EVENT:', message.body);
+});
+
+client.on('message_create', async message => {
+  console.log('📩 MESSAGE_CREATE EVENT:', message.body);
 
   const body = message.body?.trim();
   if (!body || !body.startsWith(PREFIX)) return;
 
   const [command, ...rest] = body.split(' ');
   const content = rest.join(' ');
+  const commandName = command.substring(PREFIX.length);
 
-  const commandName = command.substring(1);
+  console.log('🔎 COMMAND:', commandName);
 
   if (!allCommands.includes(commandName)) {
     console.log('❌ Unknown command:', commandName);
@@ -22,7 +27,12 @@ client.on('message', async message => {
 
   console.log('▶️ Running command:', commandName);
 
-  await commands[commandName].run(message, content);
+  try {
+    await commands[commandName].run(message, content);
+    console.log('✅ Command finished:', commandName);
+  } catch (error) {
+    console.error('❌ Command error:', error);
+  }
 });
 
 client.initialize();
