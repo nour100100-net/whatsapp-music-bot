@@ -58,6 +58,14 @@ const client = new Client({
       '--disable-gpu',
       '--disable-extensions',
       '--disable-background-networking',
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-features=Translate,BackForwardCache',
+      '--disable-component-update',
+      '--disable-default-apps',
+      '--disable-sync',
+      '--no-first-run',
+      '--no-zygote',
     ],
   },
 
@@ -102,19 +110,5 @@ client.on('disconnected', reason => {
 client.on('auth_failure', message => {
   console.error('❌ WhatsApp AUTH FAILURE:', message);
 });
-
-setInterval(async () => {
-  try {
-    const state = await client.getState();
-
-    console.log('💓 WhatsApp health:', state);
-
-    if (state !== 'CONNECTED') {
-      console.warn('⚠️ WhatsApp is not connected:', state);
-    }
-  } catch (error) {
-    console.error('❌ WhatsApp health check failed:', error);
-  }
-}, 30000);
 
 export default client;
