@@ -39,7 +39,10 @@ for (const fileName of staleLockFiles) {
 if (fallbackRequired) {
   authPath = path.join(sessionRoot, `auth-data-${Date.now()}`);
   fs.mkdirSync(authPath, { recursive: true });
-  console.log(`Using fallback auth path because session appears occupied: ${authPath}`);
+
+  console.log(
+    `Using fallback auth path because session appears occupied: ${authPath}`,
+  );
 } else {
   fs.mkdirSync(browserSessionPath, { recursive: true });
 }
@@ -47,8 +50,17 @@ if (fallbackRequired) {
 const client = new Client({
   puppeteer: {
     headless: true,
-    args: ['--no-sandbox'],
+    protocolTimeout: 120000,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-extensions',
+      '--disable-background-networking',
+    ],
   },
+
   authStrategy: new LocalAuth({
     dataPath: authPath,
   }),
@@ -57,19 +69,38 @@ const client = new Client({
 client.on('qr', async qr => {
   console.log('\n========== WHATSAPP QR ==========\n');
 
-  // QR عادي كنسخة احتياطية
   qrcode.generate(qr, { small: true });
 
-  // رابط QR كصورة
-  const qrImage = await QRCode.toDataURL(qr);
-  console.log('\nQR IMAGE:\n');
-  console.log(qrImage);
+  try {
+    const qrImage = await QRCode.toDataURL(qr);
+
+    console.log('\nQR IMAGE:\n');
+    console.log(qrImage);
+  } catch (error) {
+    console.error('❌ QR generation error:', error);
+  }
 
   console.log('\n=================================\n');
 });
 
-client.on('ready', async () => {
-  console.log(text[LANGUAGE].CONNECTED);
+client.on('authenticated', () => {
+  console.log('🔐 WhatsApp authenticated');
+});
+
+client.on('ready', () => {
+  console.log('✅ WhatsApp READY - Successfully connected!');
+});
+
+client.on('change_state', state => {
+  console.log('🔄 WhatsApp state:', state);
+});
+
+client.on('disconnected', reason => {
+  console.error('❌ WhatsApp DISCONNECTED:', reason);
+});
+
+client.on('auth_failure', message => {
+  console.error('❌ WhatsApp AUTH FAILURE:', message);
 });
 
 export default client;
